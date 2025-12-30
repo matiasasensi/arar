@@ -26,14 +26,16 @@
       <a-marker preset="hiro" emitevents="true" id="marker">
 
         <!-- Modelo GLB -->
-        <a-entity
-          id="fakemogus"
-          gltf-model="url(materiales/fakemogus.glb)"
-          scale="0.5 0.5 0.5"
-          position="0 0 0"
-          rotation="180 180 180"
-          animation-mixer="clip: take; autoplay: false">
-        </a-entity>
+       <a-entity
+  id="fakemogus"
+  gltf-model="url(materiales/fakemogus.glb)"
+  scale="0.5 0.5 0.5"
+  position="0 0 0"
+  rotation="0 180 0"
+  animation-mixer="clip: take; autoplay: false"
+  event-set__modelloaded="model-loaded: console.log('Modelo cargado')">
+</a-entity>
+
 
       </a-marker>
 
@@ -42,35 +44,31 @@
 
     <!-- Scripts -->
     <script>
-      const marker = document.querySelector("#marker");
-      const btn = document.getElementById("countBtn");
-      const scoreDisplay = document.getElementById("score");
-      const model = document.getElementById("fakemogus");
-      let score = 0;
+const btn = document.getElementById("countBtn");
+const scoreDisplay = document.getElementById("score");
+let score = 0;
+const model = document.getElementById("fakemogus");
 
-      // Mensaje de detección de marker
-      marker.addEventListener("markerFound", () => {
-        console.log("MARKER DETECTADO");
-      });
+// Esperar a que el modelo cargue
+model.addEventListener("model-loaded", () => {
+  console.log("Modelo listo para animar");
 
-      marker.addEventListener("markerLost", () => {
-        console.log("marker lost");
-      });
+  btn.addEventListener("click", () => {
+    score++;
+    scoreDisplay.innerText = score;
 
-      // Botón: suma puntaje y reproduce animación cada click
-      btn.addEventListener("click", () => {
-        score++;
-        scoreDisplay.innerText = score;
+    const mixer = model.components["animation-mixer"];
+    if (mixer) {
+      // Reiniciar animación
+      mixer.stop();
+      mixer.play();
+    } else {
+      console.warn("Animation mixer no listo");
+    }
+  });
+});
+</script>
 
-        const mixer = model.components["animation-mixer"];
-        if (mixer) {
-          mixer.stop();  // detiene animación si estaba en curso
-          mixer.play();  // reproduce desde el inicio
-        } else {
-          console.warn("Animation mixer no listo");
-        }
-      });
-    </script>
 
   </body>
 </html>
