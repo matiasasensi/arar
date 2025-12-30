@@ -16,18 +16,23 @@
 </div>
     <a-scene embedded arjs>
       <a-entity light="type: directional; color: #FFF; intensity: 1" position="0 1 0"></a-entity>
-      <a-marker preset="hiro" emitevents="true" id="marker">
-        <a-box
-  position="0 0.5 0"
-  rotation="0 45 0"
-  scale="0.5 0.5 0.5"
-  material="color: red">
-</a-box>
-      </a-marker>
+     <a-marker preset="hiro" emitevents="true" id="marker">
+
+  <a-entity
+    id="fakemogus"
+    gltf-model="url(materiales/fakemogus.glb)"
+    scale="0.5 0.5 0.5"
+    position="0 0 0"
+    rotation="0 180 0"
+    animation-mixer="autoplay: false">
+  </a-entity>
+
+</a-marker>
+
 
       <a-entity camera></a-entity>
     </a-scene>
-    <script>
+   <script>
   const marker = document.querySelector("#marker");
 
   marker.addEventListener("markerFound", () => {
@@ -40,20 +45,29 @@
 </script>
 <script>
 let score = 0;
-
 const btn = document.getElementById("countBtn");
 const scoreDisplay = document.getElementById("score");
+const model = document.getElementById("fakemogus");
 
 btn.addEventListener("click", () => {
   score++;
   scoreDisplay.innerText = score;
 
+  // Reiniciar animación cada vez
+  const mixer = model.components["animation-mixer"];
+  if (mixer) {
+    // Detener animación actual y reproducir desde el inicio
+    mixer.stop();
+    mixer.play();
+  }
+
+  // Opcional: si querés pasar de juego al llegar a 10
   if (score >= 10) {
-    // Cuando llega a 10, cambiar de página
-    window.location.href = "guitar.html";
+    // setTimeout(() => { window.location.href = "guitar.html"; }, 2000);
   }
 });
 </script>
+
 
 
   </body>
