@@ -7,7 +7,7 @@
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
 
-  <!-- A-Frame Extras (animation-mixer) -->
+  <!-- Extras (animation-mixer) -->
   <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
   <!-- Partículas -->
@@ -20,61 +20,37 @@
 <body style="margin:0; overflow:hidden;">
 
   <!-- UI -->
-  <div style="
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    text-align: center;
-  ">
-    <button id="countBtn" style="font-size:20px; padding:10px 20px;">
-      CLICK
-    </button>
-    <p style="color:white; font-size:18px;">
-      Score: <span id="score">0</span>/10
-    </p>
+  <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10; text-align:center;">
+    <button id="countBtn" style="font-size:20px; padding:10px 20px;">CLICK</button>
+    <p style="color:white;">Score: <span id="score">0</span>/10</p>
   </div>
 
-  <a-scene
-    embedded
-    arjs="trackingMethod: best; debugUIEnabled: false"
-    renderer="logarithmicDepthBuffer: true;"
-  >
+  <a-scene embedded arjs="debugUIEnabled:false">
 
-    <!-- Assets -->
     <a-assets>
       <audio id="clickSound" src="sounds/efecto clip.mp3" preload="auto"></audio>
     </a-assets>
 
-    <!-- Iluminación -->
-    <a-entity light="type: ambient; intensity: 1.0"></a-entity>
+    <!-- Luz -->
+    <a-entity light="type: ambient; intensity: 1"></a-entity>
     <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
 
     <a-marker preset="hiro">
 
-      <!-- Modelo -->
       <a-entity
         id="fakemogus"
         gltf-model="url(materiales/fakemogus.glb)"
         scale="0.5 0.5 0.5"
-        rotation="180 180 0"
-        sound="src: #clickSound; volume: 1">
+        rotation="0 180 0"
+        sound="src:#clickSound">
       </a-entity>
 
-      <!-- Partículas -->
       <a-entity
         id="particles"
         position="0 -0.25 0"
-        particle-system="
-          preset: dust;
-          particleCount: 250;
-          color: #FFD700;
-          velocityValue: 0 1 0;
-          velocitySpread: 0.4 0.6 0.4;
-          size: 0.1;
-          lifetime: 1;
-          enabled: false;">
+        particle-system="preset:dust; particleCount:200; color:#FFD700;
+                         velocityValue:0 1 0; velocitySpread:0.4 0.6 0.4;
+                         size:0.1; lifetime:1; enabled:false">
       </a-entity>
 
     </a-marker>
@@ -84,17 +60,26 @@
 
   <script>
     let score = 0;
+    let modelReady = false;
 
     const btn = document.getElementById("countBtn");
     const scoreDisplay = document.getElementById("score");
     const model = document.getElementById("fakemogus");
     const particles = document.getElementById("particles");
 
+    // ✅ ESPERAR A QUE EL MODELO CARGUE
+    model.addEventListener("model-loaded", () => {
+      modelReady = true;
+      console.log("Modelo cargado, listo para animar");
+    });
+
     btn.addEventListener("click", () => {
+      if (!modelReady) return;
+
       score++;
       scoreDisplay.textContent = score;
 
-      // 🔥 Animación (forzada, confiable)
+      // 🔥 Animación (RECREADA correctamente)
       model.removeAttribute("animation-mixer");
       model.setAttribute("animation-mixer", {
         clip: "take.001",
