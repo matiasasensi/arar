@@ -2,45 +2,58 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>AR Test</title>
+  <title>AR Game</title>
 
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+
+  <!-- AR.js -->
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 
 <body style="margin:0; overflow:hidden;">
 
 <!-- UI -->
-<div style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10;">
-  <button id="countBtn" style="font-size:20px; padding:10px 20px;">Click me!</button>
-  <p>Score: <span id="score">0</span>/10</p>
+<div style="
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  text-align: center;
+">
+  <button id="countBtn" style="font-size:20px; padding:10px 20px;">
+    Click me!
+  </button>
+  <p style="color:white;">Score: <span id="score">0</span>/10</p>
 </div>
 
-<a-scene embedded arjs>
-  
-  <!-- Luz suave -->
+<a-scene embedded arjs renderer="logarithmicDepthBuffer: true;">
+
+  <!-- LUCES -->
   <a-entity light="type: ambient; intensity: 0.7"></a-entity>
   <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
 
+  <!-- MARKER -->
   <a-marker preset="hiro" id="marker">
 
-    <!-- Modelo -->
+    <!-- MODELO -->
     <a-entity
       id="fakemogus"
       gltf-model="url(materiales/fakemogus.glb)"
       scale="0.5 0.5 0.5"
       rotation="0 180 0"
-      animation-mixer="autoplay:false"
+      animation-mixer="clip: take.001; autoplay: false; loop: once; clampWhenFinished: true"
       sound="src: url(materiales/click.mp3); volume: 1">
     </a-entity>
 
     <!-- IMAGEN +1 -->
     <a-image
-      id="plusOne"
+      id="plus"
       src="materiales/plus1.png"
       position="0 -0.3 0"
       scale="0.15 0.15 0.15"
-      material="transparent:true; opacity:0">
+      material="transparent: true; opacity: 0">
     </a-image>
 
   </a-marker>
@@ -54,11 +67,14 @@ let modelReady = false;
 
 const btn = document.getElementById("countBtn");
 const scoreDisplay = document.getElementById("score");
-const model = document.getElementById("fakemogus");
-const plus = document.getElementById("plusOne");
 
+const model = document.getElementById("fakemogus");
+const plus = document.getElementById("plus");
+
+// esperar a que cargue el modelo
 model.addEventListener("model-loaded", () => {
   modelReady = true;
+  console.log("Modelo cargado");
 });
 
 btn.addEventListener("click", () => {
@@ -67,26 +83,20 @@ btn.addEventListener("click", () => {
   score++;
   scoreDisplay.textContent = score;
 
-  // 🔁 Animación del modelo
-  model.removeAttribute("animation-mixer");
-  model.setAttribute("animation-mixer", {
-    clip: "take.001",
-    loop: "once",
-    clampWhenFinished: true
-  });
+  // 🎬 ANIMACIÓN (reinicio limpio)
+  const mixer = model.components["animation-mixer"].mixer;
+  mixer.setTime(0);
+  mixer.update(0);
+  mixer.timeScale = 1;
 
-  // 🔊 Sonido
+  // 🔊 SONIDO
   model.components.sound.stopSound();
   model.components.sound.playSound();
 
-  // ✨ IMAGEN +1
-  plus.removeAttribute("animation__move");
-  plus.removeAttribute("animation__scale");
-  plus.removeAttribute("animation__fade");
-
+  // ✨ +1 IMAGEN
+  plus.setAttribute("material", "opacity", 1);
   plus.setAttribute("position", "0 -0.3 0");
   plus.setAttribute("scale", "0.15 0.15 0.15");
-  plus.setAttribute("material", "opacity", 1);
 
   plus.setAttribute("animation__move", {
     property: "position",
@@ -105,8 +115,7 @@ btn.addEventListener("click", () => {
   plus.setAttribute("animation__fade", {
     property: "material.opacity",
     to: 0,
-    dur: 600,
-    easing: "linear"
+    dur: 600
   });
 });
 </script>
