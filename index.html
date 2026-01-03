@@ -7,36 +7,78 @@
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
 
-  <!-- Extras (animation-mixer) -->
+  <!-- Extras -->
   <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
   <!-- AR.js -->
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    body { margin:0; overflow:hidden; }
+
+    #ui {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      text-align: center;
+    }
+
+    #countBtn {
+      width: 120px;
+      height: 120px;
+      background: url("materiales/plus1.png") no-repeat center;
+      background-size: contain;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+    }
+
+    #videoOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      display: none;
+      z-index: 999;
+    }
+
+    #videoOverlay video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  </style>
 </head>
 
-<body style="margin:0; overflow:hidden;">
+<body>
 
   <!-- UI -->
-  <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10; text-align:center;">
-    <button id="countBtn" style="font-size:20px; padding:10px 20px;">CLICK</button>
+  <div id="ui">
+    <button id="countBtn"></button>
     <p style="color:white;">Score: <span id="score">0</span>/10</p>
   </div>
 
+  <!-- VIDEO FINAL -->
+  <div id="videoOverlay">
+    <video id="finalVideo" src="materiales/video.mp4" controls autoplay></video>
+  </div>
+
+  <!-- AR -->
   <a-scene embedded arjs="debugUIEnabled:false">
 
     <a-assets>
       <audio id="clickSound" src="materiales/click.mp3" preload="auto"></audio>
       <a-asset-item id="mogusModel" src="materiales/fakemogus.glb"></a-asset-item>
-      <img id="plus1Img" src="materiales/plus1.png">
     </a-assets>
 
-    <!-- Luz -->
     <a-entity light="type: ambient; intensity: 1"></a-entity>
     <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
 
     <a-marker preset="hiro">
-
-      <!-- Modelo 3D -->
       <a-entity
         id="fakemogus"
         gltf-model="#mogusModel"
@@ -44,23 +86,6 @@
         rotation="0 0 90"
         sound="src:#clickSound">
       </a-entity>
-
-      <!-- PNG Overlay Holder -->
-      <a-entity id="plus1Holder"rotation="0 90 0" >
-        <a-image
-          id="plus1"
-          src="#plus1Img"
-          position="0 0 0"
-          scale="1.5 1.5 1.5"
-          transparent="true"
-          visible="false"
-          material="depthTest: false"
-          look-at="[camera]"
-          
-            >
-        </a-image>
-      </a-entity>
-
     </a-marker>
 
     <a-entity camera></a-entity>
@@ -73,12 +98,13 @@
     const btn = document.getElementById("countBtn");
     const scoreDisplay = document.getElementById("score");
     const model = document.getElementById("fakemogus");
-    const plus1 = document.getElementById("plus1");
+    const videoOverlay = document.getElementById("videoOverlay");
+    const finalVideo = document.getElementById("finalVideo");
+    const scene = document.querySelector("a-scene");
+    const ui = document.getElementById("ui");
 
-    // Esperar a que el modelo cargue
     model.addEventListener("model-loaded", () => {
       modelReady = true;
-      console.log("Modelo cargado, listo para animar");
     });
 
     btn.addEventListener("click", () => {
@@ -87,7 +113,7 @@
       score++;
       scoreDisplay.textContent = score;
 
-      // Animación 3D
+      // Animación del modelo
       model.removeAttribute("animation-mixer");
       model.setAttribute("animation-mixer", {
         clip: "take.001",
@@ -102,32 +128,14 @@
         sound.playSound();
       }
 
-      // Mostrar PNG
-      plus1.setAttribute("visible", true);
-      plus1.setAttribute("position", "0 0.5 0"); // reset posición
+      // LLEGÓ A 10 → VIDEO
+      if (score >= 10) {
+        ui.style.display = "none";
+        scene.style.display = "none";
 
-      // Animación del PNG
-      plus1.removeAttribute("animation");
-      plus1.setAttribute("animation", {
-        property: "position",      
-        to: "0 0 100",
-        dur: 2000,
-        easing: "linear"
-      });
-
-      plus1.removeAttribute("animation__opacity");
-      plus1.setAttribute("animation__opacity", {
-        property: "material.opacity",
-        from: 1,
-        to: 0,
-        dur: 2000,
-        easing: "linear"
-      });
-
-      // Ocultar PNG después de la animación
-      setTimeout(() => {
-        plus1.setAttribute("visible", false);
-      }, 2000);
+        videoOverlay.style.display = "block";
+        finalVideo.play();
+      }
     });
   </script>
 
