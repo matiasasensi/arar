@@ -14,7 +14,7 @@
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 
-<body style="margin:0; overflow:hidden; background:black;">
+<body style="margin:0; overflow:hidden;">
 
   <!-- UI -->
   <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10; text-align:center;">
@@ -26,6 +26,7 @@
 
     <a-assets>
       <audio id="clickSound" src="materiales/click.mp3" preload="auto"></audio>
+      <a-asset-item id="mogusModel" src="materiales/fakemogus.glb"></a-asset-item>
       <img id="plus1Img" src="materiales/plus1.png">
     </a-assets>
 
@@ -33,25 +34,24 @@
     <a-entity light="type: ambient; intensity: 1"></a-entity>
     <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
 
-    <!-- Marcador -->
     <a-marker preset="hiro">
 
       <!-- Modelo 3D -->
       <a-entity
         id="fakemogus"
-        gltf-model="url(materiales/fakemogus.glb)"
+        gltf-model="#mogusModel"
         scale="0.5 0.5 0.5"
         rotation="180 0 200"
         sound="src:#clickSound">
       </a-entity>
 
-      <!-- PNG animado -->
+      <!-- PNG Overlay Holder -->
       <a-entity id="plus1Holder" rotation="0 180 0">
         <a-image
           id="plus1"
           src="#plus1Img"
           position="0 0.5 0"
-          scale="0.3 0.3 0.3"
+          scale="0.5 0.5 0.5"
           transparent="true"
           visible="false"
           material="depthTest: false">
@@ -84,7 +84,7 @@
       score++;
       scoreDisplay.textContent = score;
 
-      // Animación del modelo
+      // Animación 3D
       model.removeAttribute("animation-mixer");
       model.setAttribute("animation-mixer", {
         clip: "take.001",
@@ -99,44 +99,32 @@
         sound.playSound();
       }
 
-      // Animación PNG
+      // Mostrar PNG
       plus1.setAttribute("visible", true);
-      plus1.setAttribute("position", "0 0.5 0");
-      plus1.setAttribute("scale", "0.3 0.3 0.3");
-      plus1.setAttribute("material", "opacity: 1; transparent: true; depthTest: false");
+      plus1.setAttribute("position", "0 0.5 0"); // reset posición
 
-      let start = null;
-      const duration = 1000; // 1 segundo
-      const initialY = 0.5;
-      const finalY = 1.5;
-      const initialScale = 0.3;
-      const finalScale = 0.6;
+      // Animación del PNG
+      plus1.removeAttribute("animation");
+      plus1.setAttribute("animation", {
+        property: "position",
+        to: "0 1.5 0",
+        dur: 1000,
+        easing: "easeOutCubic"
+      });
 
-      function animatePNG(timestamp) {
-        if (!start) start = timestamp;
-        const elapsed = timestamp - start;
-        const t = Math.min(elapsed / duration, 1);
+      plus1.removeAttribute("animation__opacity");
+      plus1.setAttribute("animation__opacity", {
+        property: "material.opacity",
+        from: 1,
+        to: 0,
+        dur: 1000,
+        easing: "linear"
+      });
 
-        // Posición Y
-        const y = initialY + (finalY - initialY) * t;
-        plus1.setAttribute("position", `0 ${y} 0`);
-
-        // Escala
-        const s = initialScale + (finalScale - initialScale) * t;
-        plus1.setAttribute("scale", `${s} ${s} ${s}`);
-
-        // Opacidad
-        const opacity = 1 - t;
-        plus1.setAttribute("material", `opacity: ${opacity}; transparent: true; depthTest: false`);
-
-        if (t < 1) {
-          requestAnimationFrame(animatePNG);
-        } else {
-          plus1.setAttribute("visible", false);
-        }
-      }
-
-      requestAnimationFrame(animatePNG);
+      // Ocultar PNG después de la animación
+      setTimeout(() => {
+        plus1.setAttribute("visible", false);
+      }, 1000);
     });
   </script>
 
