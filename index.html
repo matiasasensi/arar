@@ -2,118 +2,105 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>AR.js + PNG Effect</title>
+  <title>AR Game</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
-  </style>
+  <!-- Extras (animation-mixer) -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+
+  <!-- Partículas -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe-particle-system-component@1.0.0/dist/aframe-particle-system-component.min.js"></script>
+
+  <!-- AR.js -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 
-<body>
+<body style="margin:0; overflow:hidden;">
 
-<a-scene
-  embedded
-  arjs="sourceType: webcam; debugUIEnabled: false;"
-  vr-mode-ui="enabled: false"
->
+  <!-- UI -->
+  <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10; text-align:center;">
+    <button id="countBtn" style="font-size:20px; padding:10px 20px;">CLICK</button>
+    <p style="color:white;">Score: <span id="score">0</span>/10</p>
+  </div>
 
-  <!-- MARKER PRESET -->
-  <a-marker preset="hiro" id="marker">
+  <a-scene embedded arjs="debugUIEnabled:false">
 
-    <!-- MODELO 3D -->
-    <a-entity
-      id="model"
-      gltf-model="materiales/fakemogus.glb"
-      scale="0.5 0.5 0.5"
-      position="0 0 0"
-      animation-mixer
-    ></a-entity>
+    <a-assets>
+      <audio id="clickSound" src="sounds/click.mp3" preload="auto"></audio>
+    </a-assets>
 
-    <!-- PNG +1 -->
-    <a-image
-      id="plus1"
-      src="materiales/plus1.png"
-      position="0 -0.25 0"
-      scale="0.3 0.3 0.3"
-      visible="false"
-      transparent="true"
-      material="shader: flat; opacity: 1"
-    ></a-image>
+    <!-- Luz -->
+    <a-entity light="type: ambient; intensity: 1"></a-entity>
+    <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
 
-  </a-marker>
+    <a-marker preset="hiro">
 
-  <a-camera></a-camera>
+      <a-entity
+        id="fakemogus"
+        gltf-model="url(materiales/fakemogus.glb)"
+        scale="0.5 0.5 0.5"
+        rotation="0 180 0"
+        sound="src:#clickSound">
+      </a-entity>
 
-</a-scene>
+      <a-entity
+        id="particles"
+        position="0 -0.25 0"
+        particle-system="preset:dust; particleCount:200; color:#FFD700;
+                         velocityValue:0 1 0; velocitySpread:0.4 0.6 0.4;
+                         size:0.1; lifetime:1; enabled:false">
+      </a-entity>
 
-<audio id="clickSound" src="materiales/click.mp3"></audio>
+    </a-marker>
 
-<script>
-  const marker = document.querySelector("#marker");
-  const plus1 = document.querySelector("#plus1");
-  const sound = document.querySelector("#clickSound");
+    <a-entity camera></a-entity>
+  </a-scene>
 
-  let markerVisible = false;
+  <script>
+    let score = 0;
+    let modelReady = false;
 
-  marker.addEventListener("markerFound", () => {
-    markerVisible = true;
-  });
+    const btn = document.getElementById("countBtn");
+    const scoreDisplay = document.getElementById("score");
+    const model = document.getElementById("fakemogus");
+    const particles = document.getElementById("particles");
 
-  marker.addEventListener("markerLost", () => {
-    markerVisible = false;
-  });
-
-  function lanzarPlus1() {
-    if (!markerVisible) return;
-
-    sound.currentTime = 0;
-    sound.play();
-
-    plus1.setAttribute("visible", true);
-    plus1.setAttribute("position", "0 -0.25 0");
-    plus1.setAttribute("scale", "0.3 0.3 0.3");
-    plus1.setAttribute("material", "opacity: 1");
-
-    // SUBE
-    plus1.setAttribute("animation__move", {
-      property: "position",
-      to: "0 0.2 0",
-      dur: 700,
-      easing: "easeOutQuad"
+    // ✅ ESPERAR A QUE EL MODELO CARGUE
+    model.addEventListener("model-loaded", () => {
+      modelReady = true;
+      console.log("Modelo cargado, listo para animar");
     });
 
-    // CRECE
-    plus1.setAttribute("animation__scale", {
-      property: "scale",
-      to: "0.6 0.6 0.6",
-      dur: 700,
-      easing: "easeOutQuad"
+    btn.addEventListener("click", () => {
+      if (!modelReady) return;
+
+      score++;
+      scoreDisplay.textContent = score;
+
+      // 🔥 Animación (RECREADA correctamente)
+      model.removeAttribute("animation-mixer");
+      model.setAttribute("animation-mixer", {
+        clip: "take.001",
+        loop: "once",
+        clampWhenFinished: true
+      });
+
+      // 🔊 Sonido
+      const sound = model.components.sound;
+      if (sound) {
+        sound.stopSound();
+        sound.playSound();
+      }
+
+      // ✨ Partículas
+      particles.setAttribute("particle-system", "enabled", true);
+      setTimeout(() => {
+        particles.setAttribute("particle-system", "enabled", false);
+      }, 500);
     });
-
-    // DESVANECE
-    plus1.setAttribute("animation__fade", {
-      property: "material.opacity",
-      to: 0,
-      dur: 700,
-      easing: "linear"
-    });
-
-    setTimeout(() => {
-      plus1.setAttribute("visible", false);
-    }, 700);
-  }
-
-  // CLICK / TAP
-  document.body.addEventListener("click", lanzarPlus1);
-</script>
+  </script>
 
 </body>
 </html>
