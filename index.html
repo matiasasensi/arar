@@ -109,9 +109,9 @@
       plus1.removeAttribute("animation");
       plus1.setAttribute("animation", {
         property: "position",
-        to: "0 100 20",
+        to: "0 200 0",
         dur: 2000,
-        easing: "easeOutCubic"
+        easing: "linear"
       });
 
       plus1.removeAttribute("animation__opacity");
@@ -126,7 +126,7 @@
       // Ocultar PNG después de la animación
       setTimeout(() => {
         plus1.setAttribute("visible", false);
-      }, 1000);
+      }, 2000);
     });
   </script>
 
