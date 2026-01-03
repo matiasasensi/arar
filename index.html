@@ -11,36 +11,44 @@
 
 <body style="margin:0; overflow:hidden;">
 
-  <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10;">
-    <button id="countBtn" style="font-size:20px;">CLICK</button>
+  <!-- UI -->
+  <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:10; text-align:center;">
+    <button id="countBtn" style="font-size:20px; padding:10px 20px;">CLICK</button>
+    <p style="color:white;">Score: <span id="score">0</span>/10</p>
   </div>
 
   <a-scene embedded arjs="debugUIEnabled:false">
 
     <a-assets>
       <audio id="clickSound" src="sounds/click.mp3"></audio>
+      <!-- 🔴 PNG CARGADO CORRECTAMENTE -->
       <img id="plus1Tex" src="materiales/plus1.png">
     </a-assets>
 
+    <a-entity light="type: ambient; intensity: 1"></a-entity>
+    <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
+
     <a-marker preset="hiro">
 
+      <!-- MODELO -->
       <a-entity
         id="fakemogus"
         gltf-model="url(materiales/fakemogus.glb)"
         scale="0.5 0.5 0.5"
-        rotation="0 180 0"
+        rotation="1800 180 180"
         sound="src:#clickSound">
       </a-entity>
 
-      <!-- 🔴 PNG USANDO a-image (NO plane) -->
-      <a-image
+      <!-- PNG -->
+      <a-plane
         id="plus1"
-        src="#plus1Tex"
-        position="0 0.3 0"
-        scale="0.4 0.4 0.4"
-        visible="false"
-        look-at="[camera]">
-      </a-image>
+        material="src: #plus1Tex; shader: flat; transparent: true; side: double"
+        position="0 -0.35 0"
+        rotation="-90 0 0"
+        width="0.4"
+        height="0.4"
+        visible="false">
+      </a-plane>
 
     </a-marker>
 
@@ -48,20 +56,26 @@
   </a-scene>
 
   <script>
+    let score = 0;
+    let modelReady = false;
+
     const btn = document.getElementById("countBtn");
+    const scoreDisplay = document.getElementById("score");
     const model = document.getElementById("fakemogus");
     const plus1 = document.getElementById("plus1");
 
-    let ready = false;
-
     model.addEventListener("model-loaded", () => {
-      ready = true;
-      console.log("modelo listo");
+      modelReady = true;
+      console.log("Modelo cargado");
     });
 
     btn.addEventListener("click", () => {
-      if (!ready) return;
+      if (!modelReady) return;
 
+      score++;
+      scoreDisplay.textContent = score;
+
+      // animación
       model.removeAttribute("animation-mixer");
       model.setAttribute("animation-mixer", {
         clip: "take.001",
@@ -69,8 +83,11 @@
         clampWhenFinished: true
       });
 
+      // sonido
+      model.components.sound.stopSound();
       model.components.sound.playSound();
 
+      // mostrar PNG
       plus1.setAttribute("visible", false);
       plus1.setAttribute("visible", true);
     });
