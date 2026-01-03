@@ -46,7 +46,7 @@
       </a-entity>
 
       <!-- PNG Overlay Holder -->
-      <a-entity id="plus1Holder"rotation="90 180 180" >
+      <a-entity id="plus1Holder" >
         <a-image
           id="plus1"
           src="#plus1Img"
@@ -108,9 +108,8 @@
       // Animación del PNG
       plus1.removeAttribute("animation");
       plus1.setAttribute("animation", {
-        property: "position",
-        from: "0 0 0",
-        to: "0 0 100",
+        property: "position",      
+        to: "0 0 0",
         dur: 2000,
         easing: "linear"
       });
