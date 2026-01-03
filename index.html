@@ -4,13 +4,8 @@
   <meta charset="utf-8">
   <title>AR Game</title>
 
-  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-
-  <!-- Extras (animation-mixer) -->
   <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
-
-  <!-- AR.js -->
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
 
@@ -25,10 +20,11 @@
   <a-scene embedded arjs="debugUIEnabled:false">
 
     <a-assets>
-      <audio id="clickSound" src="sounds/click.mp3" preload="auto"></audio>
+      <audio id="clickSound" src="sounds/click.mp3"></audio>
+      <!-- 🔴 PNG CARGADO CORRECTAMENTE -->
+      <img id="plus1Tex" src="materiales/plus1.png">
     </a-assets>
 
-    <!-- Luces -->
     <a-entity light="type: ambient; intensity: 1"></a-entity>
     <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
 
@@ -43,16 +39,15 @@
         sound="src:#clickSound">
       </a-entity>
 
-      <!-- PNG (ESTÁTICO) -->
+      <!-- PNG -->
       <a-plane
         id="plus1"
-        src="materiales/plus1.png"
-        position="0 -0.3 0"
+        material="src: #plus1Tex; shader: flat; transparent: true; side: double"
+        position="0 -0.35 0"
         rotation="-90 0 0"
         width="0.4"
         height="0.4"
-        visible="false"
-        material="shader: flat; transparent: true">
+        visible="false">
       </a-plane>
 
     </a-marker>
@@ -69,7 +64,6 @@
     const model = document.getElementById("fakemogus");
     const plus1 = document.getElementById("plus1");
 
-    // esperar modelo
     model.addEventListener("model-loaded", () => {
       modelReady = true;
       console.log("Modelo cargado");
@@ -90,14 +84,11 @@
       });
 
       // sonido
-      const sound = model.components.sound;
-      if (sound) {
-        sound.stopSound();
-        sound.playSound();
-      }
+      model.components.sound.stopSound();
+      model.components.sound.playSound();
 
       // mostrar PNG
-      plus1.setAttribute("visible", false); // reset
+      plus1.setAttribute("visible", false);
       plus1.setAttribute("visible", true);
     });
   </script>
