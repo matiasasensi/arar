@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Synthesia</title>
+  <style>
+    body { margin:0; overflow:hidden; background:black; }
+    #gameCanvas { display:block; }
+    #piano {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<img id="piano" src="materiales/piano.png">
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Notas cayendo
+const notes = [];
+const noteImg = new Image();
+noteImg.src = "materiales/note.png";
+
+// Configuración
+const noteSpeed = 3;      // pixeles por frame
+const noteSpawnInterval = 800; // ms
+const pianoHeight = 150;  // altura reservada para piano
+
+// Función para crear nota nueva
+function spawnNote() {
+  const x = Math.random() * (canvas.width - 50) + 25; // dentro de la pantalla
+  notes.push({ x: x, y: -50, width: 50, height: 50 });
+}
+
+// Animación
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // dibujar notas
+  for(let i = 0; i < notes.length; i++){
+    const n = notes[i];
+    n.y += noteSpeed;
+    ctx.drawImage(noteImg, n.x, n.y, n.width, n.height);
+
+    // eliminar notas que pasaron abajo
+    if(n.y > canvas.height - pianoHeight){
+      notes.splice(i,1);
+      i--;
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// Iniciar
+animate();
+setInterval(spawnNote, noteSpawnInterval);
+
+// Ajustar canvas al redimensionar
+window.addEventListener('resize', ()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+<style>
+  #piano {
+    position: fixed;       /* lo fija en la pantalla, no se mueve con scroll */
+    bottom: 0;             /* abajo */
+    left: 50%;             /* centrado horizontal */
+    transform: translateX(-50%);
+    width: auto;          /* ancho deseado */
+    height: 50%;          /* mantiene proporción */
+    z-index: 5;            /* por debajo de botones si hay */
+  }
+</style>
+
+</body>
+</html>

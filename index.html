@@ -14,7 +14,26 @@
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
   <style>
-    body { margin:0; overflow:hidden; }
+    body { margin:0; overflow:hidden; background:black; }
+
+    /* OVERLAY DE ARRANQUE */
+    #startOverlay {
+      position: fixed;
+      inset: 0;
+      background: black;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      font-size: 24px;
+    }
+
+    #startOverlay button {
+      font-size: 28px;
+      padding: 20px 40px;
+      cursor: pointer;
+    }
 
     #ui {
       position: fixed;
@@ -37,13 +56,10 @@
 
     #videoOverlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      inset: 0;
       background: black;
       display: none;
-      z-index: 999;
+      z-index: 9999;
     }
 
     #videoOverlay video {
@@ -56,19 +72,28 @@
 
 <body>
 
+  <!-- OVERLAY START (CLAVE PARA ESTABILIDAD) -->
+  <div id="startOverlay">
+    <button id="startBtn">START</button>
+  </div>
+
   <!-- UI -->
-  <div id="ui">
+  <div id="ui" style="display:none;">
     <button id="countBtn"></button>
     <p style="color:white;">Score: <span id="score">0</span>/10</p>
   </div>
 
   <!-- VIDEO FINAL -->
   <div id="videoOverlay">
-    <video id="finalVideo" src="materiales/video.mp4" controls autoplay></video>
+    <video id="finalVideo" src="materiales/video.mp4" controls></video>
   </div>
 
   <!-- AR -->
-  <a-scene embedded arjs="debugUIEnabled:false">
+  <a-scene
+    embedded
+    id="scene"
+    arjs="debugUIEnabled:false; autoStart:false"
+    vr-mode-ui="enabled:false">
 
     <a-assets>
       <audio id="clickSound" src="materiales/click.mp3" preload="auto"></audio>
@@ -78,13 +103,13 @@
     <a-entity light="type: ambient; intensity: 1"></a-entity>
     <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
 
-    <a-marker preset="hiro">
+    <a-marker preset="hiro" id="hiroMarker">
       <a-entity
         id="fakemogus"
         gltf-model="#mogusModel"
         scale="0.5 0.5 0.5"
         rotation="0 0 90"
-        sound="src:#clickSound">
+        sound="src:#clickSound; volume: 3">
       </a-entity>
     </a-marker>
 
@@ -95,25 +120,43 @@
     let score = 0;
     let modelReady = false;
 
-    const btn = document.getElementById("countBtn");
-    const scoreDisplay = document.getElementById("score");
-    const model = document.getElementById("fakemogus");
-    const videoOverlay = document.getElementById("videoOverlay");
-    const finalVideo = document.getElementById("finalVideo");
-    const scene = document.querySelector("a-scene");
+    const startOverlay = document.getElementById("startOverlay");
+    const startBtn = document.getElementById("startBtn");
     const ui = document.getElementById("ui");
 
+    const btn = document.getElementById("countBtn");
+    const scoreDisplay = document.getElementById("score");
+
+    const model = document.getElementById("fakemogus");
+    const scene = document.getElementById("scene");
+    const marker = document.getElementById("hiroMarker");
+
+    const videoOverlay = document.getElementById("videoOverlay");
+    const finalVideo = document.getElementById("finalVideo");
+
+    /* === START MANUAL (CLAVE) === */
+    startBtn.onclick = () => {
+      startOverlay.style.display = "none";
+      ui.style.display = "block";
+
+      // arrancar AR a propósito
+      scene.components.arjs.start();
+    };
+
+    /* === MODELO LISTO === */
     model.addEventListener("model-loaded", () => {
       modelReady = true;
+      console.log("Modelo cargado");
     });
 
+    /* === BOTÓN === */
     btn.addEventListener("click", () => {
       if (!modelReady) return;
 
       score++;
       scoreDisplay.textContent = score;
 
-      // Animación del modelo
+      // Animación
       model.removeAttribute("animation-mixer");
       model.setAttribute("animation-mixer", {
         clip: "take.001",
@@ -128,15 +171,22 @@
         sound.playSound();
       }
 
-      // LLEGÓ A 10 → VIDEO
+      // LLEGÓ A 10
       if (score >= 10) {
         ui.style.display = "none";
         scene.style.display = "none";
-
         videoOverlay.style.display = "block";
         finalVideo.play();
       }
     });
+
+    /* === WATCHDOG: si AR no arrancó, recarga === */
+    setTimeout(() => {
+      if (!marker.object3D.visible) {
+        console.warn("AR no inicializó, recargando");
+        location.reload();
+      }
+    }, 6000);
   </script>
 
 </body>
