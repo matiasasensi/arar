@@ -1,0 +1,37 @@
+body { margin:0; overflow:hidden; }
+
+#ui {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  text-align: center;
+}
+
+#countBtn {
+  width: 120px;
+  height: 120px;
+  background: url("materiales/plus1.png") no-repeat center;
+  background-size: contain;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+#videoOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  display: none;
+  z-index: 999;
+}
+
+#videoOverlay video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
