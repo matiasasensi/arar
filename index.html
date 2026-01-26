@@ -44,10 +44,26 @@
     <a-entity light="type: ambient; intensity: 1"></a-entity>
     <a-entity light="type: directional; intensity: 1.2" position="1 2 1"></a-entity>
 
-	<a-marker-camera 
-		preset='custom' type='pattern' url='assets/patron-prueba-andres.patt'>
-	</a-marker-camera>
+    <a-marker preset="hiro">
+      <a-entity
+        id="fakemogus"
+        gltf-model="#mogusModel"
+        scale="0.5 0.5 0.5"
+        rotation="0 0 90"
+        sound="src:#clickSound; volume: 3">
+      </a-entity>
+    </a-marker>
+	
 
+	<a-marker-camera preset='custom' type='pattern' url='assets/mi_marcador.patt'>		
+		<a-entity
+			id="fakemogus"
+			gltf-model="#mogusModel"
+			scale="0.5 0.5 0.5"
+			rotation="0 0 90"
+			sound="src:#clickSound; volume: 3">
+		</a-entity>
+	</a-marker-camera>
 
     <a-entity camera></a-entity>
   </a-scene>
